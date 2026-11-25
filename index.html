@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rolê</title>
+<meta name="theme-color" content="#14161a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rolê">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#f4f2ee; --card:#ffffff; --tx:#1b1d21; --mu:#6b6f76; --ln:#e3e0da;
+  --ac:#2f7d5b; --ac-bg:#e3f1ea; --warn:#b5462f; --warn-bg:#f8e6e1; --amb:#a26a00; --amb-bg:#f7ecd6;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#14161a; --card:#1d2026; --tx:#eceae6; --mu:#9a9ea6; --ln:#2c3038;
+    --ac:#5cc495; --ac-bg:#1d3329; --warn:#ef7d63; --warn-bg:#3a221d; --amb:#e8b04b; --amb-bg:#372c17; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 84px)}
+header{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
+header h1{font-size:22px;margin:0;flex:1}
+.btn{border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:10px;padding:7px 11px;font-size:14px;cursor:pointer}
+.btn.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.btn.warn{color:var(--warn);border-color:var(--warn)}
+.prog{height:6px;background:var(--ln);border-radius:4px;overflow:hidden;margin:-4px 0 14px}
+.prog i{display:block;height:100%;background:var(--ac);transition:width .2s}
+section.sec{background:var(--card);border:1px solid var(--ln);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.sec h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin:0;padding:12px 14px 8px;display:flex;justify-content:space-between}
+.item{display:flex;gap:12px;padding:11px 14px;border-top:1px solid var(--ln);cursor:pointer;align-items:flex-start}
+.item:first-of-type{border-top:0}
+.box{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--mu);margin-top:1px;display:grid;place-items:center;font-size:15px;color:#fff}
+.item.ok .box{background:var(--ac);border-color:var(--ac)}
+.item.ok .t{color:var(--mu);text-decoration:line-through}
+.t{font-size:16px}
+.d{font-size:13px;color:var(--mu);margin-top:2px}
+.del{margin-left:auto;flex:none;color:var(--warn);border:0;background:none;font-size:20px;padding:0 4px;cursor:pointer}
+.add{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--ln)}
+.add input{flex:1;min-width:0;border:1px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:9px;padding:8px 10px;font-size:16px}
+.alerta{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.banco{padding:12px 14px;border-top:1px solid var(--ln)}
+.banco:first-of-type{border-top:0}
+.banco .top{display:flex;align-items:center;gap:8px}
+.banco b{flex:1}
+.pill{font-size:12px;padding:3px 8px;border-radius:20px;font-weight:600}
+.pill.sim{background:var(--ac-bg);color:var(--ac)}
+.pill.nao{background:var(--warn-bg);color:var(--warn)}
+.pill.q{background:var(--amb-bg);color:var(--amb)}
+.seg{display:flex;gap:6px;margin-top:8px}
+.seg .btn{flex:1;padding:6px 4px;font-size:13px}
+.when{font-size:12px;color:var(--mu);margin-top:6px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding:6px 6px calc(env(safe-area-inset-bottom) + 6px)}
+nav button{flex:1;border:0;background:none;color:var(--mu);font-size:12px;padding:4px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:22px;line-height:1}
+nav button.on{color:var(--tx);font-weight:600}
+nav button.sos.on{color:var(--warn)}
+.foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.small{font-size:12px;color:var(--mu);margin-top:16px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="titulo">Rolê</h1>
+  <button class="btn" id="bEdit">✏️</button>
+  <button class="btn" id="bReset">↺ zerar</button>
+</header>
+<div class="prog" id="prog"><i></i></div>
+<main id="main"></main>
+<div class="small" id="rodape"></div>
+<nav id="nav"></nav>
+
+<script src="listas.js"></script>
+<script>
+const KEY = "role.v1";
+const hoje = () => new Date().toISOString().slice(0,10);
+const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").slice(0,40);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function padraoAbas(){
+  return PADRAO.abas.map(a => ({...a, secoes: a.secoes.map(s => ({id:s.id, nome:s.nome,
+    itens: s.itens.map(([t,d]) => ({id: slug(t), t, d}))}))}));
+}
+function carregar(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(KEY)); } catch(e) {}
+  s = s || {};
+  s.abas = s.abas || padraoAbas();
+  // aba nova no padrão (ex.: Mala, 25/11) aparece também em aparelho que já tinha listas salvas
+  padraoAbas().forEach((a, i) => { if (!s.abas.some(x => x.id === a.id)) s.abas.splice(i, 0, a); });
+  s.checks = s.checks || {};
+  s.bancos = s.bancos || {};
+  s.geral = s.geral || {};
+  s.aba = s.aba || "mala";
+  return s;
+}
+let S = carregar(), editando = false;
+if (location.hash.length > 1) S.aba = location.hash.slice(1);
+function salvar(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+
+const ABAS = () => [...S.abas.map(a => ({id:a.id, nome:a.nome, icone:a.icone, sos:a.emergencia})), {id:"bancos", nome:"Bancos", icone:"🔒"}];
+
+function render(){
+  const aba = S.abas.find(a => a.id === S.aba);
+  document.getElementById("nav").innerHTML = ABAS().map(a =>
+    `<button class="${a.id===S.aba?"on":""} ${a.sos?"sos":""}" data-aba="${a.id}"><span>${a.icone}</span>${esc(a.nome)}</button>`).join("");
+  document.getElementById("bEdit").className = "btn" + (editando ? " on" : "");
+  document.getElementById("bEdit").style.display = aba ? "" : "none";
+  document.getElementById("bReset").style.display = aba ? "" : "none";
+  if (aba) renderLista(aba); else renderBancos();
+}
+
+function renderLista(aba){
+  document.getElementById("titulo").textContent = aba.icone + " " + aba.nome;
+  const ck = S.checks[aba.id] || {};
+  let tot = 0, ok = 0, h = "";
+  if (aba.emergencia) h += `<div class="alerta"><b>Respira.</b> Faz de cima pra baixo, de outro celular. O Celular Seguro primeiro: ele bloqueia banco e chip de uma vez.</div>`;
+  for (const s of aba.secoes){
+    const feitos = s.itens.filter(i => ck[s.id+"/"+i.id]).length;
+    tot += s.itens.length; ok += feitos;
+    h += `<section class="sec"><h2><span>${esc(s.nome)}</span><span>${feitos}/${s.itens.length}</span></h2>`;
+    for (const i of s.itens){
+      const k = s.id+"/"+i.id, on = !!ck[k];
+      h += `<div class="item ${on?"ok":""}" data-k="${esc(k)}"><div class="box">${on?"✓":""}</div><div><div class="t">${esc(i.t)}</div>${i.d?`<div class="d">${esc(i.d)}</div>`:""}</div>${editando?`<button class="del" data-del="${esc(k)}">×</button>`:""}</div>`;
+    }
+    if (editando) h += `<form class="add" data-sec="${s.id}"><input placeholder="novo item" enterkeyhint="done"><button class="btn">+</button></form>`;
+    h += `</section>`;
+  }
+  if (editando) h += `<div class="foot"><button class="btn" id="bExp">⬇︎ exportar</button><button class="btn" id="bImp">⬆︎ importar</button><button class="btn warn" id="bPad">restaurar padrão</button></div>`;
+  document.getElementById("main").innerHTML = h;
+  document.querySelector("#prog i").style.width = (tot ? ok/tot*100 : 0) + "%";
+  document.getElementById("prog").style.display = "";
+  document.getElementById("rodape").textContent = "Salvo só neste aparelho. Funciona sem internet.";
+}
+
+function renderBancos(){
+  document.getElementById("titulo").textContent = "🔒 Bancos";
+  document.getElementById("prog").style.display = "none";
+  const pill = e => e==="sim" ? `<span class="pill sim">empréstimo travado</span>` : e==="nao" ? `<span class="pill nao">liberado</span>` : `<span class="pill q">não conferido</span>`;
+  let h = `<div class="alerta">Nenhum banco tem API pra travar empréstimo de fora: a trava é ligada à mão, uma vez, em cada app. Aqui fica o controle do que já está travado. Pra pegar empréstimo, você destrava no app e volta aqui.</div>`;
+  h += `<section class="sec"><h2><span>Contas</span></h2>`;
+  for (const b of PADRAO.bancos){
+    const st = S.bancos[b.id] || {};
+    h += `<div class="banco"><div class="top"><b>${esc(b.banco)}</b><span class="d">${esc(b.dono)}</span>${pill(st.e)}</div>
+      <div class="d">${esc(b.como)}</div>
+      <div class="seg">${[["sim","travado"],["nao","liberado"],["?","não sei"]].map(([v,l]) =>
+        `<button class="btn ${st.e===v?"on":""}" data-b="${b.id}" data-v="${v}">${l}</button>`).join("")}</div>
+      ${st.em?`<div class="when">conferido em ${st.em.split("-").reverse().join("/")}</div>`:""}</div>`;
+  }
+  h += `</section><section class="sec"><h2><span>Geral</span></h2>`;
+  for (const g of PADRAO.geral){
+    const em = S.geral[g.id];
+    h += `<div class="item ${em?"ok":""}" data-g="${g.id}"><div class="box">${em?"✓":""}</div><div><div class="t">${esc(g.txt)}</div><div class="d">${esc(g.dica)}${em?` · ✓ ${em.split("-").reverse().join("/")}`:""}</div></div></div>`;
+  }
+  h += `</section>`;
+  document.getElementById("main").innerHTML = h;
+  const pend = PADRAO.bancos.filter(b => (S.bancos[b.id]||{}).e !== "sim").length;
+  document.getElementById("rodape").textContent = pend ? `${pend} conta(s) sem trava confirmada.` : "Todas as contas com empréstimo travado.";
+}
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("button,.item,[data-aba]");
+  if (!t) return;
+  if (t.dataset.aba){ S.aba = t.dataset.aba; editando = false; salvar(); render(); scrollTo(0,0); return; }
+  if (t.dataset.del){
+    ev.stopPropagation();
+    const [sid, iid] = t.dataset.del.split("/");
+    const sec = S.abas.find(a => a.id===S.aba).secoes.find(s => s.id===sid);
+    sec.itens = sec.itens.filter(i => i.id !== iid); salvar(); render(); return;
+  }
+  if (t.dataset.k){ const c = S.checks[S.aba] = S.checks[S.aba] || {}; c[t.dataset.k] = !c[t.dataset.k]; if(!c[t.dataset.k]) delete c[t.dataset.k]; salvar(); render(); return; }
+  if (t.dataset.b){ S.bancos[t.dataset.b] = {e: t.dataset.v, em: hoje()}; salvar(); render(); return; }
+  if (t.dataset.g){ S.geral[t.dataset.g] = S.geral[t.dataset.g] ? null : hoje(); if(!S.geral[t.dataset.g]) delete S.geral[t.dataset.g]; salvar(); render(); return; }
+  if (t.id === "bEdit"){ editando = !editando; render(); return; }
+  if (t.id === "bReset"){ if (confirm("Desmarcar tudo desta aba?")){ S.checks[S.aba] = {}; salvar(); render(); } return; }
+  if (t.id === "bPad"){ if (confirm("Voltar as listas pro padrão? Itens que você criou somem.")){ S.abas = padraoAbas(); salvar(); render(); } return; }
+  if (t.id === "bExp"){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(S,null,2)], {type:"application/json"}));
+    a.download = `role-${hoje()}.json`; a.click(); return;
+  }
+  if (t.id === "bImp"){
+    const i = document.createElement("input"); i.type = "file"; i.accept = "application/json";
+    i.onchange = async () => { try { const n = JSON.parse(await i.files[0].text()); if (!n.abas) throw 0; S = {...carregar(), ...n}; salvar(); render(); } catch(e){ alert("Arquivo inválido"); } };
+    i.click(); return;
+  }
+});
+document.addEventListener("submit", ev => {
+  ev.preventDefault();
+  const f = ev.target, txt = f.querySelector("input").value.trim();
+  if (!txt) return;
+  const sec = S.abas.find(a => a.id===S.aba).secoes.find(s => s.id===f.dataset.sec);
+  let id = slug(txt) || "item"; while (sec.itens.some(i => i.id===id)) id += "-";
+  sec.itens.push({id, t: txt, d: ""}); salvar(); render();
+  document.querySelector(`form[data-sec="${f.dataset.sec}"] input`)?.focus();
+});
+
+render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
